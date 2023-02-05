@@ -1,15 +1,12 @@
-FROM nginx/unit:1.29.0-python3.11
+FROM python:3
 
-COPY ./nginx/config.json /docker-entrypoint.d/config.json
+WORKDIR /usr/src/app
 
-RUN mkdir app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . ./app
+COPY . .
 
-RUN apt update && apt install -y python3-pip                                  \
-    && pip3 install -r /app/requirements.txt                               \
-    && apt remove -y python3-pip                                              \
-    && apt autoremove --purge -y                                              \
-    && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
+EXPOSE 8080
 
-EXPOSE 80
+CMD [ "python", "./app.py" ]
