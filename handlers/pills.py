@@ -24,7 +24,7 @@ def write_json(path, jsonf):
 async def get_info(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
     result = db[request.rel_url.query["login"]]
-    return web.json_response(result)
+    return web.json_response(data=result, status=200)
 
 #сколько осталось таблеток и до какого числа
 #login - логин юзера, name - название препарата
@@ -43,7 +43,27 @@ async def pills_count(request: web.BaseRequest):
     write_json(f"{DB_PATH}db.json", db)
 
     result = datetime.today() + tm.timedelta(days=int(real_count/db[login][name]["pills_use"]))
-    return web.json_response(result.strftime('%Y-%m-%d'))
+    return web.json_response(data={"Последний день": result.strftime('%Y-%m-%d')}, status=200)
+
+#Подсчет, до какого числа хватит таблеток, если добавить add_pills таблеток к текущим
+#login - логин юзера, name - название препарата, add_pills - сколько таблеток добавится
+async def pills_safe_count(request: web.BaseRequest):
+    db = open_json(f"{DB_PATH}db.json")
+    login = request.rel_url.query["login"]
+    name = request.rel_url.query["name"]
+    add_pills = request.rel_url.query["add_pills"]
+
+    date = datetime.strptime(db[login][name]["date"], '%Y-%m-%d')
+    now = datetime.today()
+    delta = now - date
+    real_count = db[login][name]["count"] - (delta.days * db[login][name]["pills_use"])
+    real_count = real_count if real_count > 0 else 0
+    db[login][name]["count"] = real_count
+    db[login][name]["date"] = datetime.today().strftime('%Y-%m-%d')
+    write_json(f"{DB_PATH}db.json", db)
+
+    result = datetime.today() + tm.timedelta( days=( int( (real_count+int(add_pills))/db[login][name]["pills_use"] ) ) )
+    return web.json_response(data={"Последний день": result.strftime('%Y-%m-%d')}, status=200)
 
 #добавить новый препарат
 #login - логин юзера, name - название препарата, count - количество таблеток, pills_use - количество таблеток в день
