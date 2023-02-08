@@ -24,11 +24,8 @@ def write_json(path, jsonf):
 #login - логин юзера
 async def get_info(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
-    try: 
-        result = db[request.rel_url.query["login"]]
-        return web.json_response(data=result, status=200)
-    except:
-        return web.json_response(data={"message": "User not found"}, status=404)
+    if not (request.rel_url.query["login"] in db) or not (db[request.rel_url.query["login"]]): return json_response(404)
+    return json_response(200, db[request.rel_url.query["login"]])
 
 #сколько осталось таблеток и до какого числа
 #login - логин юзера
