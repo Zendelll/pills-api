@@ -1,7 +1,7 @@
 from aiohttp import web
 
-def json_response(status: int):
-    errors = {
+def json_response(status: int, data = {}):
+    statuses = {
         "200": {
             "message": "OK",
             "status": 200
@@ -15,4 +15,7 @@ def json_response(status: int):
             "status": 404
         }
     }
-    return web.json_response(data={"message": errors[str(status)]["message"]}, status=errors[str(status)]["status"])
+    if not data:
+        return web.json_response(data={"message": statuses[str(status)]["message"]}, status=statuses[str(status)]["status"])
+    else:
+        return web.json_response(data=data, status=statuses[str(status)]["status"])
