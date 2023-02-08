@@ -35,6 +35,14 @@ async def pills_count(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
     login = request.rel_url.query["login"]
     name = request.rel_url.query["name"]
+    try: 
+        db[login]
+    except:
+        return web.json_response(data={"message": "User not found"}, status=404)
+    try: 
+        db[login][name]
+    except:
+        return web.json_response(data={"message": "Medication not found"}, status=404)
 
     date = datetime.strptime(db[login][name]["date"], '%Y-%m-%d')
     now = datetime.today()
