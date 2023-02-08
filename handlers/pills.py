@@ -74,7 +74,7 @@ async def pills_safe_count(request: web.BaseRequest):
 
 #добавить новый препарат
 #login - логин юзера, name - название препарата, count - количество таблеток, pills_use - количество таблеток в день
-async def set_pills(request: web.BaseRequest):
+async def set_med(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
     if param["login"] not in db:
