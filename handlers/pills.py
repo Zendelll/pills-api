@@ -5,6 +5,7 @@ from aiohttp import web
 import json
 import os
 import sys
+from internal.responses import json_response
 
 with open("/usr/src/app/config.json") as f:
         CONF = json.load(f)
@@ -102,6 +103,25 @@ async def set_med(request: web.BaseRequest):
     db[param["login"]][param["name"]] = pill
     write_json(f"{DB_PATH}db.json", db)
     return web.json_response(data={"message": "Ok"}, status=200)
+
+#удалить препарат
+#login - логин юзера, name - название препарата
+async def delete_med(request: web.BaseRequest):
+    param = await request.json()
+    db = open_json(f"{DB_PATH}db.json")
+    try:
+        str(param["login"])
+        str(param["name"])
+    except:
+        return json_response(400)
+    if param["login"] not in db: return json_response(404)
+    result = {}
+    for med, cont in db[param["login"]].items():
+        if med != param["name"]:
+            result[med] = cont
+    db[param["login"]] = result
+    write_json(f"{DB_PATH}db.json", db)
+    return json_response(200)
 
 #Добавить количество таблеток + посчитать оставшиеся с прошлой даты
 #login - логин юзера, name - название препарата, count - количество новых таблеток
