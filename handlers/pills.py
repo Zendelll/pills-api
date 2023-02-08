@@ -89,6 +89,13 @@ async def pills_safe_count(request: web.BaseRequest):
 async def set_med(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
+    try:
+        str(param["login"])
+        str(param["name"])
+        int(param["count"])
+        int(param["pills_use"])
+    except:
+        return web.json_response(data={"message": "Bad payload"}, status=400)
     if param["login"] not in db:
         db[param["login"]] = {}
     pill = {"count": param["count"], "pills_use": param["pills_use"], "date": datetime.today().strftime('%Y-%m-%d')}
