@@ -33,7 +33,10 @@ async def get_info(request: web.BaseRequest):
 #login - логин юзера
 async def pills_count(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
-    login = request.rel_url.query["login"]
+    try:
+        login = request.rel_url.query["login"]
+    except:
+        return web.json_response(data={"message": "Bad request"}, status=400)
     try: 
         db[login]
     except:
@@ -56,9 +59,18 @@ async def pills_count(request: web.BaseRequest):
 #login - логин юзера, name - название препарата, add_pills - сколько таблеток добавится
 async def pills_safe_count(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
-    login = request.rel_url.query["login"]
-    name = request.rel_url.query["name"]
-    add_pills = request.rel_url.query["add_pills"]
+    try:
+        login = request.rel_url.query["login"]
+        name = request.rel_url.query["name"]
+        add_pills = int(request.rel_url.query["add_pills"])
+    except:
+        return web.json_response(data={"message": "Bad payload"}, status=400)
+    try:
+        db[login][name]
+    except:
+        return web.json_response(data={"message": "User or med not found"}, status=404)
+    if add_pills < 0 or add_pills > 100000:
+        return web.json_response(data={"message": "add_pills out of border"}, status=400)
 
     date = datetime.strptime(db[login][name]["date"], '%Y-%m-%d')
     now = datetime.today()
