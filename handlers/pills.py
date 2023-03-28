@@ -7,6 +7,7 @@ import os
 import sys
 from internal.responses import json_response
 from internal.param_validator import validate
+import logic.pills as pills
 
 with open("/usr/src/app/config.json") as f:
         CONF = json.load(f)
@@ -27,7 +28,7 @@ async def get_info(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
     if not validate(request.rel_url.query, "login", str): return json_response(400)
     if not (request.rel_url.query["login"] in db) or not (db[request.rel_url.query["login"]]): return json_response(404)
-    return json_response(200, db[request.rel_url.query["login"]])
+    return await pills.get_info(request.rel_url.query["login"])
 
 #сколько осталось таблеток и до какого числа
 #login - логин юзера
@@ -39,15 +40,18 @@ async def pills_count(request: web.BaseRequest):
 
     result = {}
     for name, cont in db[login].items():
-        date = datetime.strptime(db[login][name]["date"], '%Y-%m-%d')
-        now = datetime.today()
-        delta = now - date
-        real_count = db[login][name]["count"] - (delta.days * db[login][name]["pills_use"])
-        real_count = real_count if real_count > 0 else 0
-        db[login][name]["count"] = real_count
-        db[login][name]["date"] = datetime.today().strftime('%Y-%m-%d')
-        write_json(f"{DB_PATH}db.json", db)
-        result[name] = (datetime.today() + tm.timedelta(days=int(real_count/db[login][name]["pills_use"]))).strftime('%Y-%m-%d')
+        try:
+            date = datetime.strptime(db[login][name]["date"], '%Y-%m-%d')
+            now = datetime.today()
+            delta = now - date
+            real_count = db[login][name]["count"] - (delta.days * db[login][name]["pills_use"])
+            real_count = real_count if real_count > 0 else 0
+            db[login][name]["count"] = real_count
+            db[login][name]["date"] = datetime.today().strftime('%Y-%m-%d')
+            write_json(f"{DB_PATH}db.json", db)
+            result[name] = (datetime.today() + tm.timedelta(days=int(real_count/db[login][name]["pills_use"]))).strftime('%Y-%m-%d')
+        except:
+            continue
     return json_response(200, result)
 
 #Подсчет, до какого числа хватит таблеток, если добавить add_pills таблеток к текущим
@@ -84,6 +88,16 @@ async def set_med(request: web.BaseRequest):
 
     pill = {"count": param["count"], "pills_use": param["pills_use"], "date": datetime.today().strftime('%Y-%m-%d')}
     db[param["login"]][param["name"]] = pill
+    write_json(f"{DB_PATH}db.json", db)
+    return json_response(200)
+
+async def user_state(request: web.BaseRequest):
+    param = await request.json()
+    db = open_json(f"{DB_PATH}db.json")
+    #Проверка наличия параметров и соответвие их типу
+    if not (validate(param, "login", str) and validate(param, "state", str) ): return json_response(400)
+    if param["login"] not in db: db[param["login"]] = {}
+    db[param["login"]]["user_state"] = param["state"]
     write_json(f"{DB_PATH}db.json", db)
     return json_response(200)
 
