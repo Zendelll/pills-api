@@ -1,12 +1,10 @@
-import requests
 import datetime as tm
 from datetime import datetime
 from aiohttp import web
 import json
-import os
-import sys
 from internal.responses import json_response
 from internal.param_validator import validate
+from internal.logger import logger
 import logic.pills as pills
 
 with open("/usr/src/app/config.json") as f:
@@ -26,7 +24,7 @@ def write_json(path, jsonf):
 #login - логин юзера
 async def get_info(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
-    if not validate(request.rel_url.query, "login", str): return json_response(400)
+    if not validate(request.rel_url.query, ["login"]): return json_response(400)
     if not (request.rel_url.query["login"] in db) or not (db[request.rel_url.query["login"]]): return json_response(404)
     return await pills.get_info(request.rel_url.query["login"])
 
@@ -34,7 +32,7 @@ async def get_info(request: web.BaseRequest):
 #login - логин юзера
 async def pills_count(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
-    if not validate(request.rel_url.query, "login", str): return json_response(400)
+    if not validate(request.rel_url.query, ["login"]): return json_response(400)
     login = request.rel_url.query["login"]
     if not (login in db) or not db[login]: return json_response(404)
 
@@ -59,7 +57,7 @@ async def pills_count(request: web.BaseRequest):
 async def pills_safe_count(request: web.BaseRequest):
     db = open_json(f"{DB_PATH}db.json")
     param = request.rel_url.query
-    if not (validate(param, "login", str) and validate(param, "name", str) and validate(param, "add_pills", str)): return json_response(400)
+    if not validate(param, ["login", "name", "add_pills"]): return json_response(400)
     login = param["login"]
     name = param["name"]
     add_pills = int(param["add_pills"])
@@ -82,8 +80,7 @@ async def pills_safe_count(request: web.BaseRequest):
 async def set_med(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
-    #Проверка наличия параметров и соответвие их типу
-    if not (validate(param, "login", str) and validate(param, "name", str) and validate(param, "pills_use", int) and validate(param, "count", int)): return json_response(400)
+    if not validate(param, ["login", "name", "pills_use", "count"]): return json_response(400)
     if param["login"] not in db: db[param["login"]] = {}
 
     pill = {"count": param["count"], "pills_use": param["pills_use"], "date": datetime.today().strftime('%Y-%m-%d')}
@@ -95,7 +92,7 @@ async def user_state(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
     #Проверка наличия параметров и соответвие их типу
-    if not (validate(param, "login", str) and validate(param, "state", str) ): return json_response(400)
+    if not validate(param, ["login", "state"]): return json_response(400)
     if param["login"] not in db: db[param["login"]] = {}
     db[param["login"]]["user_state"] = param["state"]
     write_json(f"{DB_PATH}db.json", db)
@@ -106,7 +103,7 @@ async def user_state(request: web.BaseRequest):
 async def delete_med(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
-    if not (validate(param, "login", str) and validate(param, "name", str)):  return json_response(400)
+    if not validate(param, ["login", "name"]): return json_response(400)
     if param["login"] not in db: return json_response(404)
 
     result = {}
@@ -122,7 +119,7 @@ async def delete_med(request: web.BaseRequest):
 async def add_pills(request: web.BaseRequest):
     param = await request.json()
     db = open_json(f"{DB_PATH}db.json")
-    if not (validate(param, "login", str) and validate(param, "name", str) and validate(param, "count", int)): return json_response(400)
+    if not validate(param, ["login", "name", "count"]): return json_response(400)
     if param["login"] not in db or param["name"] not in db[param["login"]]: return json_response(404)
 
     date = datetime.strptime(db[param["login"]][param["name"]]["date"], '%Y-%m-%d')

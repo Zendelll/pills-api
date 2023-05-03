@@ -1,5 +1,37 @@
 {
     "PATH": {
         "DB_PATH": "/usr/src/app/db/"
+    },
+    "PARAM_TYPES": {
+        "login": {
+            "type": "str",
+            "min": 1,
+            "max": 256
+        },
+        "state": {
+            "type": "str",
+            "min": 1,
+            "max": 256
+        },
+        "name": {
+            "type": "str",
+            "min": 1,
+            "max": 256
+        },
+        "add_pills": {
+            "type": "int",
+            "min": 1,
+            "max": 1000
+        },
+        "count": {
+            "type": "int",
+            "min": 1,
+            "max": 1000
+        },
+        "pills_use": {
+            "type": "int",
+            "min": 1,
+            "max": 1000
+        }
     }
 }
