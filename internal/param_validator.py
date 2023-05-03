@@ -28,7 +28,3 @@ def validate (params: dict, requirement: list = None) -> bool :
         logger.error(f'No type for "{key}" in PARAM_TYPES or "{value}" out of bounds')
         return False
     return True
-                
-
-print (validate({"login": "adv", "add_pills": 1230}))
-print (validate({"login": "adv"}))
