@@ -13,13 +13,13 @@ with open("/usr/src/app/config.json") as f:
 DB_PATH = CONF['PATH']['DB_PATH']
 
 
-def open_json(path):
-    with open(path) as f:
+def open_json():
+    with open(DB_PATH) as f:
         db = json.load(f)
     return(db)
 
-def write_json(path, jsonf):
-    with open(path, "w", encoding='utf-8') as f:
+def write_json(jsonf):
+    with open(DB_PATH, "w", encoding='utf-8') as f:
         json.dump(jsonf, f)
 
 
