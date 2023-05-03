@@ -1,11 +1,11 @@
 from aiohttp import web
-from handlers.pills import get_info
-from handlers.pills import set_med
-from handlers.pills import add_pills
-from handlers.pills import pills_count
-from handlers.pills import pills_safe_count
-from handlers.pills import delete_med
-from handlers.pills import user_state
+from handlers.pills.get_info import get_info
+from handlers.pills.set_med import set_med
+from handlers.pills.add_pills import add_pills
+from handlers.pills.pills_count import pills_count
+from handlers.pills.pills_safe_count import pills_safe_count
+from handlers.pills.delete_med import delete_med
+from handlers.pills.user_state import user_state
 
 def setup_routes(app: web.Application):
     app.router.add_get('/pills/get_me', get_info)
