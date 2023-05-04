@@ -20,10 +20,10 @@ def validate (params: dict, requirement: list = None) -> bool :
             return False
         
         if PARAM_TYPES[key]['type'] == 'str':
-            if len(value) >= PARAM_TYPES[key]['min'] and len(value) <= PARAM_TYPES[key]['max'] and isinstance(key, str):
+            if len(value) >= PARAM_TYPES[key]['min'] and len(value) <= PARAM_TYPES[key]['max'] and isinstance(value, str):
                 continue
         elif PARAM_TYPES[key]['type'] == 'int':
-            if value >= PARAM_TYPES[key]['min'] and value <= PARAM_TYPES[key]['max'] and isinstance(key, str):
+            if int(value) >= PARAM_TYPES[key]['min'] and int(value) <= PARAM_TYPES[key]['max']:
                 continue
         logger.error(f'No type for "{key}" in PARAM_TYPES or "{value}" out of bounds')
         return False

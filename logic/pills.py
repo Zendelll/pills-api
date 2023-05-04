@@ -14,17 +14,17 @@ DB_PATH = CONF['PATH']['DB_PATH']
 
 
 def open_json():
-    with open(DB_PATH) as f:
+    with open(f'{DB_PATH}/db.json') as f:
         db = json.load(f)
     return(db)
 
 def write_json(jsonf):
-    with open(DB_PATH, "w", encoding='utf-8') as f:
+    with open(f'{DB_PATH}/db.json', "w", encoding='utf-8') as f:
         json.dump(jsonf, f)
 
 
 #получить все о юзере
 #login - логин юзера
 async def get_info(login: str):
-    db = open_json(f"{DB_PATH}db.json")
+    db = open_json()
     return json_response(200, db[login])
