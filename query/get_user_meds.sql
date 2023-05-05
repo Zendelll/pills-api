@@ -1,0 +1,1 @@
+SELECT * FROM pill_users WHERE user_login = %(login)s;

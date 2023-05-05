@@ -2,6 +2,7 @@
     "PATH": {
         "DB_PATH": "/usr/src/app/db/"
     },
+    "QUERY_PATH": "/usr/src/app/query",
     "PARAM_TYPES": {
         "login": {
             "type": "str",

@@ -2,24 +2,22 @@ from aiohttp import web
 from internal.responses import json_response
 from internal.param_validator import validate
 from internal.logger import logger
-import logic.pills as pills
+from internal.db import delete_med as delete
+from internal.db import get_med
 
 async def delete_med(request: web.BaseRequest):
     """удалить препарат
     
-    login - логин юзера, name - название препарата
+    Params: login - логин юзера, name - название препарата
     """
     param = await request.json()
-    db = pills.open_json()
     if not validate(param, ["login", "name"]): return json_response(400)
-    if param["login"] not in db: 
-        logger.error(f'Пользователя {param["login"]} нет в базе')
+    if not get_med(param['login'], param['name']): 
+        logger.error(f"Пользователя {param['login']} нет в базе или у него нет препарата {param['name']}")
         return json_response(404)
-
-    result = {}
-    for med, cont in db[param["login"]].items():
-        if med != param["name"]:
-            result[med] = cont
-    db[param["login"]] = result
-    pills.write_json(db)
+    
+    if not delete(param['login'], param['name']):
+        logger.error(f"Что-то пошло не так в delete_med login = {param['login']}, med = {param['name']}")
+        return json_response(500)
+    logger.debug(f"Препарат успешно удален из бд login = {param['login']}, med = {param['name']}")
     return json_response(200)
