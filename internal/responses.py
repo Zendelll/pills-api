@@ -13,6 +13,10 @@ def json_response(status: int, data = {}):
         "404": {
             "message": "Not found",
             "status": 404
+        },
+        "500": {
+            "message": "I fell",
+            "status": 500
         }
     }
     if not data:

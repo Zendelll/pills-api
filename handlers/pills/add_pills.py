@@ -3,31 +3,32 @@ from aiohttp import web
 from internal.responses import json_response
 from internal.param_validator import validate
 from internal.logger import logger
-import logic.pills as pills
+from internal.db import set_med
+from internal.db import get_med
+
+MAX_PILL_COUNTER = 5000
 
 async def add_pills(request: web.BaseRequest):
     """Добавить количество таблеток + посчитать оставшиеся с прошлой даты
     
-    login - логин юзера,
-    name - название препарата,
-    count - количество новых таблеток
+    Params: login - логин юзера, name - название препарата, count - количество новых таблеток
     """
     param = await request.json()
-    db = pills.open_json()
     if not validate(param, ["login", "name", "count"]): return json_response(400)
-    if param["login"] not in db or param["name"] not in db[param["login"]]: 
-        logger.error(f'Пользователя {param["login"]} нет в базе или лекарства {param["name"]} нет у этого юзера')
+    med = get_med(param['login'], param['name'])
+    if not med:
+        logger.error(f"Пользователя {param['login']} нет в базе или у него нет препарата {param['name']}")
         return json_response(404)
 
-    date = datetime.strptime(db[param["login"]][param["name"]]["date"], '%Y-%m-%d')
+    date = datetime.strptime(f"{med.last_count_date}", '%Y-%m-%d')
     now = datetime.today()
     delta = now - date
-    real_count = db[param["login"]][param["name"]]["count"] - (delta.days * db[param["login"]][param["name"]]["pills_use"])
-    real_count = real_count if real_count > 0 else 0
-    real_count += param["count"]
-    if real_count > 50000: return json_response(400)
+    pills_counter = med.amount - delta.days * med.daily_usage
+    pills_counter = pills_counter if pills_counter > 0 else 0
+    pills_counter += param["count"]
+    if pills_counter > MAX_PILL_COUNTER: return json_response(400)
 
-    db[param["login"]][param["name"]]["count"] = real_count
-    db[param["login"]][param["name"]]["date"] = datetime.today().strftime('%Y-%m-%d')
-    pills.write_json(db)
+    if not set_med(param['login'], param['name'], med.daily_usage, pills_counter):
+        logger.error(f"Что-то пошло не так в add_pills login = {param['login']}, med = {param['name']}, pill_counter = {pills_counter}, adding_amount = {param['count']}")
+        return json_response(500)
     return json_response(200)
